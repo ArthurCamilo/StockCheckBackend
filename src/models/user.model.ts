@@ -1,9 +1,11 @@
 import mongoose, { Schema, Model, Document } from 'mongoose';
+import bcrypt from 'bcrypt';
 
 type UserDocument = Document & {
   fullName: string;
   email: string;
   password: string;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 };
 
 type UserInput = {
@@ -33,6 +35,14 @@ const usersSchema = new Schema(
     timestamps: true,
   },
 );
+
+usersSchema.methods.comparePassword = async function (
+  candidatePassword: string
+) {
+  const user = this as UserDocument;
+
+  return bcrypt.compare(candidatePassword, user.password).catch((e) => false);
+};
 
 const User: Model<UserDocument> = mongoose.model<UserDocument>('User', usersSchema);
 
